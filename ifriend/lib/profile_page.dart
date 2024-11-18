@@ -233,11 +233,11 @@ class _ProfilePageState extends State<ProfilePage> {
           ],
         ),
       ),
-    );
-    floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton(
         onPressed: _addTask,
         child: Icon(Icons.add),
         backgroundColor: Colors.green,
       ),
+    );
   }
 }

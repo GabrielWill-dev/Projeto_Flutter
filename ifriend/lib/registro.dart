@@ -109,6 +109,9 @@ class _RegistroState extends State<Registro> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('Usuário registrado com sucesso!')),
                     );
+
+                    // Retornar à tela principal
+                    Navigator.pop(context);
                   }
                 },
                 style: _buildButtonStyle(),

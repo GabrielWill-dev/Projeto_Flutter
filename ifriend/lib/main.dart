@@ -6,7 +6,7 @@ import 'sobre_nos.dart';
 import 'usuario_service.dart';
 
 
-void main() {
+void main()async{
   runApp(MyApp());
 }
 
