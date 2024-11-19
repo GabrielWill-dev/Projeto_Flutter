@@ -39,18 +39,24 @@ class _ProfilePageState extends State<ProfilePage> {
         _descriptionController.text.isNotEmpty &&
         _startTimeController.text.isNotEmpty &&
         _endTimeController.text.isNotEmpty) {
-      setState(() {
-        _tasks.add(Task(
-          title: _titleController.text,
-          description: _descriptionController.text,
-          startTime: _parseTime(_startTimeController.text),
-          endTime: _parseTime(_endTimeController.text),
-        ));
-        _titleController.clear();
-        _descriptionController.clear();
-        _startTimeController.clear();
-        _endTimeController.clear();
-      });
+      try {
+        setState(() {
+          _tasks.add(Task(
+            title: _titleController.text,
+            description: _descriptionController.text,
+            startTime: _parseTime(_startTimeController.text),
+            endTime: _parseTime(_endTimeController.text),
+          ));
+          _titleController.clear();
+          _descriptionController.clear();
+          _startTimeController.clear();
+          _endTimeController.clear();
+        });
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao adicionar tarefa: Formato de hora inválido!')),
+        );
+      }
     } else {
       // Exibir um alerta se algum campo estiver vazio
       ScaffoldMessenger.of(context).showSnackBar(
@@ -79,8 +85,25 @@ class _ProfilePageState extends State<ProfilePage> {
 
   // Função para formatar a entrada de hora
   TimeOfDay _parseTime(String time) {
-    final parts = time.split(':');
-    return TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+    try {
+      final isAmPm = time.contains(RegExp(r'AM|PM', caseSensitive: false));
+      if (isAmPm) {
+        final format = time.split(" ");
+        final parts = format[0].split(":");
+        final hour = int.parse(parts[0]);
+        final minute = int.parse(parts[1]);
+        final isPm = format[1].toUpperCase() == "PM";
+        return TimeOfDay(
+          hour: (isPm && hour != 12) ? hour + 12 : (hour == 12 && !isPm ? 0 : hour),
+          minute: minute,
+        );
+      } else {
+        final parts = time.split(':');
+        return TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+      }
+    } catch (e) {
+      throw FormatException("Formato de hora inválido: $time");
+    }
   }
 
   // Função para exibir o seletor de hora
@@ -90,7 +113,9 @@ class _ProfilePageState extends State<ProfilePage> {
       initialTime: TimeOfDay.now(),
     );
     if (selectedTime != null) {
-      controller.text = selectedTime.format(context);
+      controller.text = selectedTime.hour.toString().padLeft(2, '0') +
+          ':' +
+          selectedTime.minute.toString().padLeft(2, '0');
     }
   }
 
@@ -100,6 +125,12 @@ class _ProfilePageState extends State<ProfilePage> {
       appBar: AppBar(
         title: Text('Perfil'),
         backgroundColor: const Color.fromARGB(255, 59, 65, 71),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: _addTask,
+            tooltip: 'Adicionar Tarefa',
+          ),],
       ),
       backgroundColor: const Color.fromARGB(255, 24, 23, 23),
       body: Padding(
@@ -232,11 +263,6 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _addTask,
-        child: Icon(Icons.add),
-        backgroundColor: Colors.green,
       ),
     );
   }
